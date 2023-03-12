@@ -74,7 +74,15 @@ if __name__ == "__main__":
     card.highlighted_text = [word.replace("\u2018", "'").replace("\u2019", "'").replace("\u2014", "-") for word in card.highlighted_text]
     card.emphasized_text = [word.replace("\u2018", "'").replace("\u2019", "'").replace("\u2014", "-") for word in card.emphasized_text]
 
-  json_dict = [{"prompt": f"Tag: {card.tag} \n\nInput: {' '.join(card.underlined_text)}\n###\n\nHighlighted Text:", "completion": json.dumps(card.emphasized_text) + "\n"} for card in cards]
-  # json_object = json.dumps(json_dict, indent=4)
-  with jsonlines.open("output-emphasis.jsonl", mode="w") as writer:
+  # json_dict = [{"prompt": f"Tag: {card.tag} \n\nInput: {' '.join(card.underlined_text)}\n###\n\nHighlighted Text:", "completion": json.dumps(card.emphasized_text) + "\n"} for card in cards]
+  # json_dict = [{"prompt": f"Select text from the input for highlighting based upon the tag.\n\nTag: {card.tag}\n\nInput: {card.card_text}\n###\n\nHighlighted Text:", "completion": json.dumps(card.highlighted_text) + "<|endoftext|>"} for card in cards]
+  json_dict = [{"tag": card.tag, "text": card.card_text, "highlights": json.dumps(card.highlighted_text)} for card in cards]
+  json_object = json.dumps(json_dict, indent=4)
+
+  # with open("output.txt", "w") as outfile:
+  #   for item in json_dict:
+  #     outfile.write(f"Select text from the input for highlighting based upon the tag.\nTag: {card.tag}\nInput: {card.card_text}Highlighted Text: " + json.dumps(card.highlighted_text))
+  #     outfile.write("\n------\n")
+
+  with jsonlines.open("validation.json", mode="w") as writer:
     writer.write_all(json_dict)
