@@ -5,6 +5,8 @@ import json
 import jsonlines
 from docx import Document
 from card import Card, TAG_NAME
+import argparse
+from datasets import load_dataset, ClassLabel, Sequence
 
 CITE_NAME = "13 pt Bold"
 
@@ -32,7 +34,7 @@ def parse_cards(filename):
   for paragraph in document.paragraphs:
     if paragraph.style.name == TAG_NAME:
       try:
-        cards.append(Card(current_card, {}))
+        cards.append(Card(current_card))
       except Exception as e:
         continue
       finally:
@@ -42,29 +44,96 @@ def parse_cards(filename):
   
   return cards
 
-if __name__ == "__main__":
-  if len(sys.argv) != 2:
-    print("Usage: python3 parser.py <file.docx>")
-    sys.exit(1)
+def push_to_hf(output_file, hub_name):
+  dataset = load_dataset("json", data_files=output_file)
+  features = dataset['train'].features.copy()
 
-  docx_name = sys.argv[1]
-  if not os.path.isfile(docx_name):
+  features["highlight_labels"] = Sequence(feature=ClassLabel(names=["no", "yes"]), id=None)
+  features["underline_labels"] = Sequence(feature=ClassLabel(names=["no", "yes"]), id=None)
+  features["emphasis_labels"] = Sequence(feature=ClassLabel(names=["no", "yes"]), id=None)
+
+  dataset = dataset['train'].map(lambda x : x, features=features, batched=True)
+  dataset.push_to_hub(hub_name)
+
+if __name__ == "__main__":
+  # Parse command line arguments
+  parser = argparse.ArgumentParser()
+  parser.add_argument("file", type=str, help="path to a docx file or directory of files")
+  parser.add_argument("-o", "--output", type=str, help="path to output file (default: output.json)", default="output.json")
+  parser.add_argument("-jsonl", "--jsonl", help="force output in jsonl format (default: False)", action='store_true')
+  parser.add_argument("-s", "--skip_parse", help="skip parsing and use existing output file", action='store_true')
+  parser.add_argument("-hub", "--hub", help="name of huggingface hub to push output", type=str, default=None)
+  args = parser.parse_args()
+
+  # Upload existing output file to huggingface hub
+  if args.skip_parse:
+    if not os.path.isfile(args.output):
+      print("Output file not found")
+      sys.exit(1)
+    if not args.hub:
+      print("No hub name provided")
+      sys.exit(1)
+    push_to_hf(args.output, args.hub)
+    sys.exit(0)
+
+  # Get list of files to parse
+  files_to_parse = []
+  file_or_dir = args.file
+  if os.path.isfile(file_or_dir):
+    files_to_parse.append(file_or_dir)
+  elif os.path.isdir(file_or_dir):
+    for file in os.listdir(file_or_dir):
+      if file.endswith(".docx"):
+        files_to_parse.append(os.path.join(file_or_dir, file))
+  else:
     print("File not found")
     sys.exit(1)
   
-  cards = parse_cards(docx_name)
+  # Parse each file into a list of cards
+  cards = []
+  for docx_name in files_to_parse:
+    try:
+      parsed_cards = parse_cards(docx_name)
+      cards.extend(parsed_cards)
+    except Exception as e:
+      print("Error parsing " + docx_name)
+      continue
+
+  print("Found " + str(len(cards)) + " cards")
 
   # Strip punctuation and empty strings from each card's highlighted text
   for card in cards:
     punctuation_list = [",", ".", "!", "?", ":", ";", "(", ")", "[", "]", "{", "}", "\"", "\'", "“", "”", "‘", "’"]
+
     # Strip punctuation from each word in list of highlighted words
     card.highlighted_text = [word.strip("".join(punctuation_list)) for word in card.highlighted_text]
     card.underlined_text = [word.strip("".join(punctuation_list)) for word in card.underlined_text]
     card.emphasized_text = [word.strip("".join(punctuation_list)) for word in card.emphasized_text]
+
     # Remove empty strings
     card.highlighted_text = list(filter(None, card.highlighted_text))
     card.underlined_text = list(filter(None, card.underlined_text))
     card.emphasized_text = list(filter(None, card.emphasized_text))
+
+    # Assert that run_text length == highlight/underline/emphasis length
+    try:
+      assert len(card.run_text) == len(card.highlight_labels) 
+      assert len(card.run_text) == len(card.underline_labels) 
+      assert len(card.run_text) == len(card.emphasis_labels)
+    except AssertionError:
+      print("Error parsing " + card.tag + ": run_text length does not match highlight/underline/emphasis length")
+
+    # Remove empty strings from run_text (and the associated labels)
+    # Keep track of indexes to remove from labels
+    indexes_to_remove = []
+    for i, word in enumerate(card.run_text):
+      if word == "":
+        indexes_to_remove.append(i)
+    for i in sorted(indexes_to_remove, reverse=True):
+      del card.run_text[i]
+      del card.highlight_labels[i]
+      del card.underline_labels[i]
+      del card.emphasis_labels[i]
 
   # Strip \u2018 and \u2019 and \u2014 from each card's card_text, tag, and underlined_text
   for card in cards:
@@ -73,16 +142,38 @@ if __name__ == "__main__":
     card.underlined_text = [word.replace("\u2018", "'").replace("\u2019", "'").replace("\u2014", "-") for word in card.underlined_text]
     card.highlighted_text = [word.replace("\u2018", "'").replace("\u2019", "'").replace("\u2014", "-") for word in card.highlighted_text]
     card.emphasized_text = [word.replace("\u2018", "'").replace("\u2019", "'").replace("\u2014", "-") for word in card.emphasized_text]
+    card.run_text = [word.replace("\u2018", "'").replace("\u2019", "'").replace("\u2014", "-") for word in card.run_text]
+    
+  # Write cards to JSON file
+  json_dict = [{
+    "tag": card.tag, 
+    "text": card.card_text, 
+    "highlights": card.highlighted_text, 
+    "underlines": card.underlined_text,
+    "emphasis": card.emphasized_text,
+    "cite": card.cite,
+    "cite_emphasis": card.cite_emphasis,
+    "run_text": card.run_text,
+    "highlight_labels": card.highlight_labels,
+    "underline_labels": card.underline_labels,
+    "emphasis_labels": card.emphasis_labels,
+  } for card in cards]
 
-  # json_dict = [{"prompt": f"Tag: {card.tag} \n\nInput: {' '.join(card.underlined_text)}\n###\n\nHighlighted Text:", "completion": json.dumps(card.emphasized_text) + "\n"} for card in cards]
-  # json_dict = [{"prompt": f"Select text from the input for highlighting based upon the tag.\n\nTag: {card.tag}\n\nInput: {card.card_text}\n###\n\nHighlighted Text:", "completion": json.dumps(card.highlighted_text) + "<|endoftext|>"} for card in cards]
-  json_dict = [{"tag": card.tag, "text": card.card_text, "highlights": json.dumps(card.highlighted_text)} for card in cards]
-  json_object = json.dumps(json_dict, indent=4)
+  output_file = args.output
 
-  # with open("output.txt", "w") as outfile:
-  #   for item in json_dict:
-  #     outfile.write(f"Select text from the input for highlighting based upon the tag.\nTag: {card.tag}\nInput: {card.card_text}Highlighted Text: " + json.dumps(card.highlighted_text))
-  #     outfile.write("\n------\n")
+  if output_file.endswith(".json") and not args.jsonl:
+    with open(output_file, "w") as outfile:
+      print("Writing to " + output_file)
+      json.dump(json_dict, outfile, indent=4)
+  elif output_file.endswith(".jsonl") or args.jsonl:
+    with jsonlines.open(output_file, mode="w") as writer:
+      print("Writing to " + output_file)
+      writer.write_all([card for card in json_dict])
+  else:
+    print("Invalid output file type")
+    sys.exit(1)
 
-  with jsonlines.open("validation.json", mode="w") as writer:
-    writer.write_all(json_dict)
+  dataset = load_dataset("json", data_files=output_file)
+  
+  if args.hub:
+    push_to_hf(output_file, args.hub)
