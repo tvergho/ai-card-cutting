@@ -4,7 +4,7 @@ import asyncio
 import json
 import sys
 from dotenv import load_dotenv
-from utils import get_completions_from_input
+from utils import get_completions_from_input, fix_escaped_unicode
 from constants import model_name_to_id
 import os
 import re
@@ -37,6 +37,10 @@ async def main():
 
   model = model_name_to_id[args.modelName]
 
+  if args.underlines:
+    args.underlines = fix_escaped_unicode(args.underlines)
+  bodyText = fix_escaped_unicode(bodyText)
+
   if args.modelName != "underline":
     underlines = args.underlines.split(", ")
   else:
@@ -64,7 +68,7 @@ async def main():
 
 if __name__ == '__main__':
   # log arguments string to file for debugging
-  # with open('/Users/tylervergho/test/completion.log', 'w') as f:
-    # f.write(sys.argv[0] + " " + sys.argv[1] + " " + sys.argv[2] + " " + sys.argv[3] + " " + sys.argv[4])
+  with open('/Users/tylervergho/test/completion.log', 'w') as f:
+    f.write(sys.argv[0] + " " + sys.argv[1] + " " + sys.argv[2] + " " + sys.argv[3] + " " + sys.argv[4])
 
   asyncio.run(main())

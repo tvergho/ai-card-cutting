@@ -7,3 +7,5 @@ model_name_to_id = {
   "highlight": highlight_model,
   "emphasis": emphasis_model
 }
+
+MAX_PROMPT_LENGTH = 1400

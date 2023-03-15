@@ -9,6 +9,8 @@ args = parser.parse_args()
 if args.file.endswith(".json"):
   with open(args.file, "r") as f:
     data = json.load(f)
+    # Cap length at 6
+    data = data[:6]
     for card in data:
       print(card["tag"])
       print(card["text"].replace("\n", " "))

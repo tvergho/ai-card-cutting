@@ -4,10 +4,10 @@ import json
 from datetime import datetime
 import asyncio
 from utils_highlight import highlight_substrings
+from constants import MAX_PROMPT_LENGTH
+import re
 
 encoding = tiktoken.encoding_for_model("text-babbage-001")
-
-MAX_PROMPT_LENGTH = 1600
 
 def num_tokens_from_string(string):
     """Returns the number of tokens in a text string."""
@@ -45,12 +45,40 @@ def format_prompt_for_openai_completion(tag, bodyText, underlines=None):
           chunk = []
           chunk_len = 0
         chunk.append(underline)
-        chunk_len += tokens
+        chunk_len += tokens + 5
       bodyTextChunks.append(chunk)
       return [f"Tag: {tag}\n\nInput: {json.dumps(chunk)}\n\n###\n\nHighlighted Text:" for chunk in bodyTextChunks]
     except Exception as e:
       print(e)
       return None
+
+def fix_escaped_unicode(s):
+    def replace(match):
+        unicode_code = int(match.group(1), 16)
+        return chr(unicode_code)
+
+    # Find the improperly escaped Unicode characters and replace them
+    return re.sub(r'\\u([0-9a-fA-F]{4})', replace, s)
+
+def fix_truncated_json(json_string):
+    # Add the missing closing characters
+    candidates = [
+        json_string,
+        json_string + ']',
+        json_string + '"]',
+        json_string.rstrip(',') + '"]',
+    ]
+    
+    # Try to parse each candidate as JSON and return the first valid one
+    for candidate in candidates:
+        try:
+            parsed_json = json.loads(candidate)
+            return candidate
+        except json.JSONDecodeError:
+            pass
+
+    # If none of the candidates are valid JSON, return the original string
+    return json_string
 
 async def get_completion(prompt, model, debug=False):
   try:
@@ -75,7 +103,8 @@ async def get_completion(prompt, model, debug=False):
     if debug:
       print(output)
 
-    output_arr = json.loads(output.strip())
+    output = fix_truncated_json(output.strip())
+    output_arr = json.loads(output)
     return output_arr
   except Exception as e:
     print(e)

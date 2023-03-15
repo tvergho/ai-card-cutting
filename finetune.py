@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 import argparse
 from utils import (
   format_prompt_for_openai_completion, get_completion, create_openai_file, list_openai_files, list_finetunes, 
-  create_finetune, get_finetune, calculate_fine_tuning_cost, list_models, get_completions_from_input)
+  create_finetune, get_finetune, calculate_fine_tuning_cost, list_models, get_completions_from_input, fix_escaped_unicode)
 import readline
 from utils_highlight import highlight_substrings, print_colored_text
 import asyncio
@@ -42,6 +42,10 @@ async def main():
         underlines = input("JSON formatted underlines: ")
       else:  
         underlines = None
+
+      if underlines:
+        underlines = fix_escaped_unicode(underlines)
+      bodyText = fix_escaped_unicode(bodyText)
       
       output = await get_completions_from_input(tag, bodyText, model, underlines=underlines, debug=args.debug)
       if output is None:
