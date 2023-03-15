@@ -8,6 +8,8 @@ from card import Card, TAG_NAME
 import argparse
 from datasets import load_dataset, ClassLabel, Sequence
 
+from utils import format_prompt_for_openai_completion
+
 CITE_NAME = "13 pt Bold"
 
 def parse_cites(filename):
@@ -59,10 +61,14 @@ if __name__ == "__main__":
   # Parse command line arguments
   parser = argparse.ArgumentParser()
   parser.add_argument("file", type=str, help="path to a docx file or directory of files")
-  parser.add_argument("-o", "--output", type=str, help="path to output file (default: output.json)", default="output.json")
+  parser.add_argument("-o", "--output", type=str, help="path to output file (default: output.json)", default="output.jsonl")
   parser.add_argument("-jsonl", "--jsonl", help="force output in jsonl format (default: False)", action='store_true')
   parser.add_argument("-s", "--skip_parse", help="skip parsing and use existing output file", action='store_true')
-  parser.add_argument("-hub", "--hub", help="name of huggingface hub to push output", type=str, default=None)
+  parser.add_argument("-hub", "--hub", help="provide to format as a huggingface dataset and push output (must be logged in)", type=str, default=None)
+  parser.add_argument("--field", help="which aspect of the card to predict (highlights, underlines, emphasis)", type=str, default="highlights")
+  parser.add_argument("--input_field", help="which aspect of the card to use as input (text, underlines)", type=str, default="text")
+  parser.add_argument("--hub_format", help="force save in hf format", action='store_true')
+
   args = parser.parse_args()
 
   # Upload existing output file to huggingface hub
@@ -161,19 +167,33 @@ if __name__ == "__main__":
 
   output_file = args.output
 
-  if output_file.endswith(".json") and not args.jsonl:
-    with open(output_file, "w") as outfile:
-      print("Writing to " + output_file)
-      json.dump(json_dict, outfile, indent=4)
-  elif output_file.endswith(".jsonl") or args.jsonl:
+  if args.hub or args.hub_format:
+    if output_file.endswith(".json") and not args.jsonl:
+      with open(output_file, "w") as outfile:
+        print("Writing to " + output_file)
+        json.dump(json_dict, outfile, indent=4)
+    elif output_file.endswith(".jsonl") or args.jsonl:
+      with jsonlines.open(output_file, mode="w") as writer:
+        print("Writing to " + output_file)
+        writer.write_all([card for card in json_dict])
+    else:
+      print("Invalid output file type")
+      sys.exit(1)
+
+    if args.hub:
+      dataset = load_dataset("json", data_files=output_file)
+      push_to_hf(output_file, args.hub)
+  else:
     with jsonlines.open(output_file, mode="w") as writer:
       print("Writing to " + output_file)
-      writer.write_all([card for card in json_dict])
-  else:
-    print("Invalid output file type")
-    sys.exit(1)
 
-  dataset = load_dataset("json", data_files=output_file)
-  
-  if args.hub:
-    push_to_hf(output_file, args.hub)
+      if args.input_field == "text":
+        writer.write_all([{
+          "prompt": format_prompt_for_openai_completion(card["tag"], card["text"]),
+          "completion": " " + json.dumps(card[args.field]) + " END"
+        } for card in json_dict])
+      else:
+        writer.write_all([{
+          "prompt": format_prompt_for_openai_completion(card["tag"], json.dumps(card[args.input_field])),
+          "completion": " " + json.dumps(card[args.field]) + " END"
+        } for card in json_dict])
