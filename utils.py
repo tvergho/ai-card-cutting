@@ -81,7 +81,7 @@ async def get_completion(prompt, model, debug=False):
     print(e)
     return None
 
-async def get_completions_from_input(tag, bodyText, model, underlines=None, debug=False):
+async def get_completions_from_input(tag, bodyText, model, underlines=None, debug=False, paragraphs=[]):
   if underlines is not None:
     prompts = format_prompt_for_openai_completion(tag, bodyText, underlines)
   else:
@@ -102,7 +102,7 @@ async def get_completions_from_input(tag, bodyText, model, underlines=None, debu
   # Remove newline characters
   parsed_results = [item.replace("\n", "") for item in parsed_results]
 
-  output_str, loc = highlight_substrings(bodyText, parsed_results, debug=debug)
+  output_str, loc = highlight_substrings(bodyText, parsed_results, debug=debug, paragraphs=paragraphs)
   return output_str, loc
 
 

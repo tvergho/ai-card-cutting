@@ -19,6 +19,7 @@ async def main():
   parser.add_argument('--tag', type=str, help='tag of the card', metavar="tag")
   parser.add_argument('--bodyText', type=str, help='body text', metavar="bodyText")
   parser.add_argument('--underlines', type=str, help='JSON formatted underlines', metavar="underlines", default=None)
+  parser.add_argument('--paragraphs', type=str, metavar="paragraphs", default="0")
 
   args = parser.parse_args()
   bodyText = args.bodyText
@@ -26,6 +27,10 @@ async def main():
   bodyText = bodyText.replace('\n', ' ').replace('\r', ' ')
   bodyText = bodyText.replace('\n', ' ').replace('\r', ' ')
   bodyText = bodyText.replace('\\n', ' ').replace('\\r', ' ')
+
+  paragraphs = args.paragraphs.split(",")
+  paragraphs = [int(p) for p in paragraphs]
+  paragraphs = [p for p in paragraphs if p != 0]
 
   with open('/Users/tylervergho/test/bodyText.log', 'w') as f:
     f.write(bodyText)
@@ -42,7 +47,8 @@ async def main():
     bodyText, 
     model, 
     underlines=json.dumps(underlines) if underlines is not None else None, 
-    debug=False
+    debug=False,
+    paragraphs=paragraphs
   )
 
   if output is None:

@@ -48,7 +48,7 @@ def merge_tags(tags):
 
     return merged_tags
 
-def highlight_substrings(text, substrings, debug=False):
+def highlight_substrings(text, substrings, debug=False, paragraphs=[]):
     start_location = 0
     substring_locations = []
     inserted_tags = []
