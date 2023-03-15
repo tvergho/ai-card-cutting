@@ -92,6 +92,11 @@ def highlight_substrings(text, substrings, debug=False, paragraphs=[]):
     # Add the remaining part of the text after the last tag
     highlighted_text += text[prev_end:]
 
+    # Convert merged_tags to substring_locations
+    substring_locations = []
+    for i in range(0, len(merged_tags), 2):
+        substring_locations.append((merged_tags[i][0], merged_tags[i + 1][0] - merged_tags[i][0]))
+
     return highlighted_text, substring_locations
 
 def print_colored_text(input_string, color="red"):

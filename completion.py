@@ -37,9 +37,9 @@ async def main():
 
   model = model_name_to_id[args.modelName]
 
-  if args.underlines:
-    args.underlines = fix_escaped_unicode(args.underlines)
-  bodyText = fix_escaped_unicode(bodyText)
+  # if args.underlines:
+  #   args.underlines = fix_escaped_unicode(args.underlines)
+  # bodyText = fix_escaped_unicode(bodyText)
 
   if args.modelName != "underline":
     underlines = args.underlines.split(", ")
