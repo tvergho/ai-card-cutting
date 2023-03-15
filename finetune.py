@@ -57,7 +57,10 @@ async def main():
       else:  
         prompts = format_prompt_for_openai_completion(tag, bodyText, None)
 
-      # output_arr = get_completion(prompt, model, debug=args.debug)
+      if prompts is None:
+        print("Invalid input")
+        continue
+      
       results = await asyncio.gather(*[get_completion(prompt, model, debug=args.debug) for prompt in prompts])
       if results is None or any(map(lambda x: x is None, results)):
         print("Invalid output")

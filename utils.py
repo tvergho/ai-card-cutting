@@ -30,8 +30,26 @@ def format_prompt_for_openai_completion(tag, bodyText, underlines=None):
       chunk += word + " "
       chunk_len += tokens
     bodyTextChunks.append(chunk)
-
     return [f"Tag: {tag}\n\nInput: {text}\n\n###\n\nHighlighted Text:" for text in bodyTextChunks]
+  else:
+    try:
+      underlines_arr = json.loads(underlines.strip())
+      chunk = []
+      bodyTextChunks = []
+      chunk_len = 0
+      for underline in underlines_arr:
+        tokens = num_tokens_from_string(underline)
+        if chunk_len + tokens + 5 > MAX_PROMPT_LENGTH - 100:
+          bodyTextChunks.append(chunk)
+          chunk = []
+          chunk_len = 0
+        chunk.append(underline)
+        chunk_len += tokens
+      bodyTextChunks.append(chunk)
+      return [f"Tag: {tag}\n\nInput: {json.dumps(chunk)}\n\n###\n\nHighlighted Text:" for chunk in bodyTextChunks]
+    except Exception as e:
+      print(e)
+      return None
 
 async def get_completion(prompt, model, debug=False):
   try:
