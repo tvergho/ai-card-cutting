@@ -5,28 +5,14 @@ from dotenv import load_dotenv
 import argparse
 from utils import (
   format_prompt_for_openai_completion, get_completion, create_openai_file, list_openai_files, list_finetunes, 
-  create_finetune, get_finetune, calculate_fine_tuning_cost, list_models)
+  create_finetune, get_finetune, calculate_fine_tuning_cost, list_models, get_completions_from_input)
 import readline
 from utils_highlight import highlight_substrings, print_colored_text
 import asyncio
+from constants import model_name_to_id
 
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
-
-# FILL THESE IN
-# underline_model = "curie:ft-personal-2023-01-26-03-54-27"
-# highlight_model = "curie:ft-personal-2023-01-26-04-52-23"
-# emphasis_model = "curie:ft-personal-2023-01-26-15-57-42"
-
-underline_model = "babbage:ft-personal:underline-2023-03-15-01-23-34"
-highlight_model = "babbage:ft-personal:highlight-2023-03-14-23-57-55"
-emphasis_model = "babbage:ft-personal:emphasis-2023-03-15-00-29-12"
-
-model_name_to_id = {
-  "underline": underline_model,
-  "highlight": highlight_model,
-  "emphasis": emphasis_model
-}
 
 async def main():
   assert len(os.getenv("OPENAI_API_KEY")) > 0, "Please set your OPENAI_API_KEY in your .env file"
@@ -51,27 +37,18 @@ async def main():
     while True:
       tag = input("Tag: ")
       bodyText = input("Body Text: ")
+      
       if args.model != "underline":
         underlines = input("JSON formatted underlines: ")
-        prompts = format_prompt_for_openai_completion(tag, bodyText, underlines)
       else:  
-        prompts = format_prompt_for_openai_completion(tag, bodyText, None)
-
-      if prompts is None:
-        print("Invalid input")
-        continue
+        underlines = None
       
-      results = await asyncio.gather(*[get_completion(prompt, model, debug=args.debug) for prompt in prompts])
-      if results is None or any(map(lambda x: x is None, results)):
-        print("Invalid output")
+      output = await get_completions_from_input(tag, bodyText, model, underlines=underlines, debug=args.debug)
+      if output is None:
+        print("No output")
         continue
 
-      # Flatten array
-      parsed_results = [item.strip() for sublist in results for item in sublist]     
-      # Remove newline characters
-      parsed_results = [item.replace("\n", "") for item in parsed_results]
-
-      output_str, loc = highlight_substrings(bodyText, parsed_results)
+      output_str, loc = output
       print_colored_text(output_str)
       if args.debug:
         print(loc)

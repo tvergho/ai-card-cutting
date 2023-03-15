@@ -3,6 +3,7 @@ import tiktoken
 import json
 from datetime import datetime
 import asyncio
+from utils_highlight import highlight_substrings
 
 encoding = tiktoken.encoding_for_model("text-babbage-001")
 
@@ -58,7 +59,9 @@ async def get_completion(prompt, model, debug=False):
       print("Prompt too long")
       return None
 
-    print("Max tokens: " + str(2048-num_tokens_in_prompt))
+    if debug:
+      print("Max tokens: " + str(2048-num_tokens_in_prompt))
+
     response = openai.Completion.create(
       model=model,
       prompt=prompt,
@@ -77,6 +80,33 @@ async def get_completion(prompt, model, debug=False):
   except Exception as e:
     print(e)
     return None
+
+async def get_completions_from_input(tag, bodyText, model, underlines=None, debug=False):
+  if underlines is not None:
+    prompts = format_prompt_for_openai_completion(tag, bodyText, underlines)
+  else:
+    prompts = format_prompt_for_openai_completion(tag, bodyText, None)
+
+  if prompts is None:
+    print("Invalid input")
+    return None
+
+  results = await asyncio.gather(*[get_completion(prompt, model, debug=debug) for prompt in prompts])
+  if results is None or any(map(lambda x: x is None, results)):
+    print("Invalid output")
+    return None
+
+  # Flatten array
+  parsed_results = [item.strip() for sublist in results for item in sublist]    
+
+  # Remove newline characters
+  parsed_results = [item.replace("\n", "") for item in parsed_results]
+
+  output_str, loc = highlight_substrings(bodyText, parsed_results, debug=debug)
+  return output_str, loc
+
+
+## OpenAI API
 
 def create_openai_file(model_name, file_path):
   try:

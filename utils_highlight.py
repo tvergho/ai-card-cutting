@@ -41,14 +41,14 @@ def merge_tags(tags):
             # Find the index of the next </h> tag
             while i < len(tags) - 1 and tags[i + 1][1] != "</h>":
                 i += 1
-                
+
             merged_tags.append((current_tag[0], "<h>"))
             merged_tags.append((tags[i + 1][0], "</h>"))
         i += 1
 
     return merged_tags
 
-def highlight_substrings(text, substrings):
+def highlight_substrings(text, substrings, debug=False):
     start_location = 0
     substring_locations = []
     inserted_tags = []
@@ -74,7 +74,8 @@ def highlight_substrings(text, substrings):
             inserted_tags.append((match + match_len, "</h>"))
             start_location = match + match_len
         else:
-            print(f"Could not match {substring}")
+            if debug:
+                print(f"Could not match {substring}")
             continue
 
     # Sort the inserted_tags by index
