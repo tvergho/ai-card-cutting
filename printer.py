@@ -11,9 +11,11 @@ if args.file.endswith(".json"):
     data = json.load(f)
     for card in data:
       print(card["tag"])
+      print(card["text"].replace("\n", " "))
       if args.print_json:
         print(json.dumps(card["underlines"]))
       else:
         print(", ".join(card["underlines"]))
+      print("\n")
 else:
   print("Must be a json file")
