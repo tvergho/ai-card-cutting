@@ -8,6 +8,7 @@ from utils import (
   create_finetune, get_finetune, calculate_fine_tuning_cost, list_models)
 import readline
 from utils_highlight import highlight_substrings, print_colored_text
+import asyncio
 
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -27,7 +28,7 @@ model_name_to_id = {
   "emphasis": emphasis_model
 }
 
-if __name__=="__main__":
+async def main():
   assert len(os.getenv("OPENAI_API_KEY")) > 0, "Please set your OPENAI_API_KEY in your .env file"
 
   parser = argparse.ArgumentParser()
@@ -52,19 +53,25 @@ if __name__=="__main__":
       bodyText = input("Body Text: ")
       if args.model != "underline":
         underlines = input("JSON formatted underlines: ")
-        prompt = format_prompt_for_openai_completion(tag, underlines)
+        prompts = format_prompt_for_openai_completion(tag, bodyText, underlines)
       else:  
-        prompt = format_prompt_for_openai_completion(tag, bodyText)
+        prompts = format_prompt_for_openai_completion(tag, bodyText, None)
 
-      output_arr = get_completion(prompt, model, debug=args.debug)
+      # output_arr = get_completion(prompt, model, debug=args.debug)
+      results = await asyncio.gather(*[get_completion(prompt, model, debug=args.debug) for prompt in prompts])
+      if results is None or any(map(lambda x: x is None, results)):
+        print("Invalid output")
+        continue
 
-      if output_arr is None:
-        print("No output")
-      else:
-        output_str, loc = highlight_substrings(bodyText, output_arr)
-        print_colored_text(output_str)
-        if args.debug:
-          print(loc)
+      # Flatten array
+      parsed_results = [item.strip() for sublist in results for item in sublist]     
+      # Remove newline characters
+      parsed_results = [item.replace("\n", "") for item in parsed_results]
+
+      output_str, loc = highlight_substrings(bodyText, parsed_results)
+      print_colored_text(output_str)
+      if args.debug:
+        print(loc)
   elif args.step == "file":
     if not args.list:
       assert args.file is not None and os.path.isfile(args.file), "Please specify a file to upload"
@@ -89,3 +96,8 @@ if __name__=="__main__":
   elif args.step == "cost":
     assert args.file is not None and os.path.isfile(args.file), "Please specify a valid file path"
     calculate_fine_tuning_cost(args.file)
+
+
+if __name__=="__main__":
+  loop = asyncio.get_event_loop()
+  loop.run_until_complete(main())

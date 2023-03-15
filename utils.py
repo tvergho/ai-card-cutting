@@ -2,21 +2,41 @@ import openai
 import tiktoken
 import json
 from datetime import datetime
+import asyncio
 
 encoding = tiktoken.encoding_for_model("text-babbage-001")
+
+MAX_PROMPT_LENGTH = 1600
 
 def num_tokens_from_string(string):
     """Returns the number of tokens in a text string."""
     num_tokens = len(encoding.encode(string))
     return int(num_tokens)
 
-def format_prompt_for_openai_completion(tag, bodyText):
-  return f"Tag: {tag}\n\nInput: {bodyText}\n\n###\n\nHighlighted Text:"
+def format_prompt_for_openai_completion(tag, bodyText, underlines=None):
+  if underlines is None:
+    # We just pass in the card body text as input
+    bodyTextArr = bodyText.split(" ")
+    chunk = ""
+    bodyTextChunks = []
+    chunk_len = 0
 
-def get_completion(prompt, model, debug=False):
+    for word in bodyTextArr:
+      tokens = num_tokens_from_string(word)
+      if chunk_len + tokens > MAX_PROMPT_LENGTH - 100:
+        bodyTextChunks.append(chunk)
+        chunk = ""
+        chunk_len = 0 
+      chunk += word + " "
+      chunk_len += tokens
+    bodyTextChunks.append(chunk)
+
+    return [f"Tag: {tag}\n\nInput: {text}\n\n###\n\nHighlighted Text:" for text in bodyTextChunks]
+
+async def get_completion(prompt, model, debug=False):
   try:
     num_tokens_in_prompt = num_tokens_from_string(prompt)
-    if num_tokens_in_prompt > 1800:
+    if num_tokens_in_prompt > MAX_PROMPT_LENGTH:
       print("Prompt too long")
       return None
 

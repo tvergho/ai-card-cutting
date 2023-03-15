@@ -3,7 +3,7 @@ import re
 from termcolor import colored
 
 # To do:
-  # Batch script for long cards
+  # Batch script for long cards (complete)
   # Macros
     # Call completion.py (and parse response)
     # Factor out string parser functions
@@ -31,24 +31,65 @@ def find_substring_index_difflib(main_string, substring, start_location=0, simil
     else:
         return -1
 
+def merge_tags(tags):
+    merged_tags = []
+    i = 0
+    while i < len(tags):
+        current_tag = tags[i]
+        if current_tag[1] == "<h>":
+            # Merge adjacent or overlapping tags
+            # Find the index of the next </h> tag
+            while i < len(tags) - 1 and tags[i + 1][1] != "</h>":
+                i += 1
+                
+            merged_tags.append((current_tag[0], "<h>"))
+            merged_tags.append((tags[i + 1][0], "</h>"))
+        i += 1
+
+    return merged_tags
+
 def highlight_substrings(text, substrings):
-    highlighted_text = ""
     start_location = 0
     substring_locations = []
+    inserted_tags = []
 
     for substring in substrings:
-        # match = text.find(substring, start_location)
-        match = find_substring_index_difflib(text, substring, start_location=start_location)
-        if match != -1:
-            highlighted_text += text[start_location:match] + "<h>" + text[match:match+len(substring)] + "</h>"
-            substring_locations.append((match, len(substring)))
-            start_location = match + len(substring)
+        exact_match = len(substring) == 2 or len(substring) == 3
+        match = find_substring_index_difflib(
+          text, 
+          substring if not exact_match else " " + substring + " ", 
+          start_location=start_location, 
+          similarity_threshold=(0.9 if not exact_match else 1)
+        )
+
+        # Try again if substring >= 3 words with the whole text
+        if match == -1 and len(substring.split(" ")) >= 3:
+          match = find_substring_index_difflib(text, substring)
+          start_location = match + match_len
+
+        elif match != -1:
+            match_len = len(substring) if not exact_match else len(substring) + 1
+            substring_locations.append((match, match_len))
+            inserted_tags.append((match, "<h>"))
+            inserted_tags.append((match + match_len, "</h>"))
+            start_location = match + match_len
         else:
             print(f"Could not match {substring}")
             continue
 
-    # Add the remaining part of the text after the last found substring
-    highlighted_text += text[start_location:]
+    # Sort the inserted_tags by index
+    inserted_tags.sort()
+    merged_tags = merge_tags(inserted_tags)
+
+    # Insert the tags into the text
+    highlighted_text = ""
+    prev_end = 0
+    for index, tag in merged_tags:
+        highlighted_text += text[prev_end:index] + tag
+        prev_end = index
+
+    # Add the remaining part of the text after the last tag
+    highlighted_text += text[prev_end:]
 
     return highlighted_text, substring_locations
 
