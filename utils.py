@@ -90,6 +90,14 @@ def get_finetune(finetune_id):
   except Exception as e:
     print(e)
 
+def list_models():
+  try:
+    response = openai.Model.list()
+    for model in response["data"]:
+      print(f"Model: {model['id']}")
+  except Exception as e:
+    print(e)
+
 
 
 ## Cost calculation

@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 import argparse
 from utils import (
   format_prompt_for_openai_completion, get_completion, create_openai_file, list_openai_files, list_finetunes, 
-  create_finetune, get_finetune, calculate_fine_tuning_cost)
+  create_finetune, get_finetune, calculate_fine_tuning_cost, list_models)
 import readline
 
 load_dotenv()
@@ -66,9 +66,11 @@ if __name__=="__main__":
     assert args.file is not None, "Please specify a valid OpenAI file ID to use for fine tuning"
     create_finetune(args.file, args.open_ai_model, args.model)
   elif args.step == "list":
-    assert args.list in ["files", "finetunes"], "Please specify a valid list type (files, finetunes)"
+    assert args.list in ["files", "finetunes", "models"], "Please specify a valid list type (files, finetunes, models)"
     if args.list == "files":
       list_openai_files()
+    elif args.list == "models":
+      list_models()
     else:
       if args.finetune_id is None:
         list_finetunes()
