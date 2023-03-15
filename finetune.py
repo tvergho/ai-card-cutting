@@ -15,7 +15,8 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 underline_model = "curie:ft-personal-2023-01-26-03-54-27"
 # highlight_model = "curie:ft-personal-2023-01-26-04-52-23"
 highlight_model = "babbage:ft-personal:highlight-2023-03-14-23-57-55"
-emphasis_model = "curie:ft-personal-2023-01-26-15-57-42"
+emphasis_model = "babbage:ft-personal:emphasis-2023-03-15-00-29-12"
+# emphasis_model = "curie:ft-personal-2023-01-26-15-57-42"
 
 model_name_to_id = {
   "underline": underline_model,
@@ -29,7 +30,7 @@ if __name__=="__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument("step", type=str, help="phase to run in (test, file, tune, list, cost)")
   parser.add_argument("--model", type=str, help="model to use (underline, highlight, emphasis, or custom)", default="underline")
-  parser.add_argument("--debug", action="store_true", help="print debug info")
+  parser.add_argument("--debug", action="store_false", help="hide debug info")
   parser.add_argument("-f", "--file", type=str, help="path to file to upload or file ID to use for fine tuning")
   parser.add_argument("-l", "--list", type=str, help="in list mode, what to list (files, finetunes)")
   parser.add_argument("-oai", "--open_ai_model", type=str, help="OpenAI model to use for fine tuning (default: curie)", default="curie")
@@ -42,17 +43,18 @@ if __name__=="__main__":
   if args.step == "test":
     assert args.model in model_name_to_id, "Please specify a valid model (underline, highlight, emphasis)"
     model = model_name_to_id[args.model]
-    tag = input("Tag: ")
-    bodyText = input("Body Text: ")
-    prompt = format_prompt_for_openai_completion(tag, bodyText)
-    output_arr = get_completion(prompt, model, debug=args.debug)
 
-    if output_arr is None:
-      print("No output")
-      exit(0)
+    while True:
+      tag = input("Tag: ")
+      bodyText = input("Body Text: ")
+      prompt = format_prompt_for_openai_completion(tag, bodyText)
+      output_arr = get_completion(prompt, model, debug=args.debug)
 
-    output_str = " ".join(output_arr)
-    print(f"{args.model.capitalize()} text: " + output_str)
+      if output_arr is None:
+        print("No output")
+      else:
+        output_str = " ".join(output_arr)
+        print(f"{args.model.capitalize()} text: " + output_str)
   elif args.step == "file":
     if not args.list:
       assert args.file is not None and os.path.isfile(args.file), "Please specify a file to upload"
