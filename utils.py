@@ -3,7 +3,7 @@ import tiktoken
 import json
 from datetime import datetime
 
-encoding = tiktoken.encoding_for_model("text-curie-001")
+encoding = tiktoken.encoding_for_model("text-babbage-001")
 
 def num_tokens_from_string(string):
     """Returns the number of tokens in a text string."""
@@ -20,11 +20,11 @@ def get_completion(prompt, model, debug=False):
       print("Prompt too long")
       return None
 
-    print("Max tokens: " + str(min(2048-num_tokens_in_prompt, num_tokens_in_prompt)))
+    print("Max tokens: " + str(2048-num_tokens_in_prompt))
     response = openai.Completion.create(
       model=model,
       prompt=prompt,
-      max_tokens=min(2048-num_tokens_in_prompt, num_tokens_in_prompt),
+      max_tokens=2048-num_tokens_in_prompt-10,
       temperature=0,
       stop=["\n", "END"]
     )

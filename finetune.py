@@ -15,10 +15,11 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 # FILL THESE IN
 # underline_model = "curie:ft-personal-2023-01-26-03-54-27"
 # highlight_model = "curie:ft-personal-2023-01-26-04-52-23"
+# emphasis_model = "curie:ft-personal-2023-01-26-15-57-42"
+
 underline_model = "babbage:ft-personal:underline-2023-03-15-01-23-34"
 highlight_model = "babbage:ft-personal:highlight-2023-03-14-23-57-55"
 emphasis_model = "babbage:ft-personal:emphasis-2023-03-15-00-29-12"
-# emphasis_model = "curie:ft-personal-2023-01-26-15-57-42"
 
 model_name_to_id = {
   "underline": underline_model,
@@ -60,10 +61,10 @@ if __name__=="__main__":
       if output_arr is None:
         print("No output")
       else:
-        # output_str = " ".join(output_arr)
-        output_str = highlight_substrings(bodyText, output_arr)
+        output_str, loc = highlight_substrings(bodyText, output_arr)
         print_colored_text(output_str)
-        # print(f"{args.model.capitalize()} text: " + output_str)
+        if args.debug:
+          print(loc)
   elif args.step == "file":
     if not args.list:
       assert args.file is not None and os.path.isfile(args.file), "Please specify a file to upload"
