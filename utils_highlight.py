@@ -2,15 +2,6 @@ from difflib import SequenceMatcher
 import re
 from termcolor import colored
 
-# To do:
-  # Batch script for long cards (complete)
-  # Macros
-    # Call completion.py (and parse response)
-    # Factor out string parser functions
-    # Test highlighting by subsequence
-  # Some problems with the substring highlighter:
-    # Short strings (less than 2 characters) – sometimes latches onto start of word – maybe use regular finder for that
-
 def find_substring_index_difflib(main_string, substring, start_location=0, similarity_threshold=0.9):
     max_similarity = 0
     index = -1
