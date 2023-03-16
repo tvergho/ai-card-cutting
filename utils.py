@@ -6,6 +6,7 @@ import asyncio
 from utils_highlight import highlight_substrings
 from constants import MAX_PROMPT_LENGTH
 import re
+import yaml
 
 encoding = tiktoken.encoding_for_model("text-babbage-001")
 
@@ -104,7 +105,8 @@ async def get_completion(prompt, model, debug=False):
       print(output)
 
     output = fix_truncated_json(output.strip())
-    output_arr = json.loads(output)
+    output = fix_escaped_unicode(output)
+    output_arr = yaml.safe_load(output)
     return output_arr
   except Exception as e:
     print(e)

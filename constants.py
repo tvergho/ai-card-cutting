@@ -8,4 +8,4 @@ model_name_to_id = {
   "emphasis": emphasis_model
 }
 
-MAX_PROMPT_LENGTH = 1400
+MAX_PROMPT_LENGTH = 1200

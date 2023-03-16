@@ -23,7 +23,7 @@ Sub UnderlineCardOpenAI()
     
     locStart = paragraph.range.start
     
-    Do While paragraph.OutlineLevel <> 1 And paragraph.OutlineLevel <> 2 And paragraph.OutlineLevel <> 3 And paragraph.OutlineLevel <> 4
+    Do While paragraph.outlineLevel <> 1 And paragraph.outlineLevel <> 2 And paragraph.outlineLevel <> 3 And paragraph.outlineLevel <> 4
         BodyText = BodyText & paragraph.range.Text
         paragraphs = paragraphs & "," & CStr(paragraph.range.End)
         Set paragraph = paragraph.Next(1)
@@ -41,7 +41,7 @@ Sub UnderlineCardOpenAI()
     
     Result = Replace(Result, "[", "")
     Result = Replace(Result, "]", "")
-    
+    MsgBox Result
     resultArr = Split(Result, "), ")
     UnderlineTextAsRanges resultArr, "Underline", locStart, locEnd
     
@@ -73,7 +73,7 @@ Sub EmphasizeCardOpenAI()
     
     locStart = paragraph.range.start
     
-    Do While paragraph.OutlineLevel <> 1 And paragraph.OutlineLevel <> 2 And paragraph.OutlineLevel <> 3 And paragraph.OutlineLevel <> 4
+    Do While paragraph.outlineLevel <> 1 And paragraph.outlineLevel <> 2 And paragraph.outlineLevel <> 3 And paragraph.outlineLevel <> 4
         BodyText = BodyText & paragraph.range.Text
         paragraphs = paragraphs & "," & CStr(paragraph.range.End)
         Set paragraph = paragraph.Next(1)
@@ -131,7 +131,7 @@ Sub EmphasizeCardOpenAI()
     
     Result = Replace(Result, "[", "")
     Result = Replace(Result, "]", "")
-
+    MsgBox Result
     resultArr = Split(Result, "), ")
     UnderlineTextAsRanges resultArr, "Emphasis", startLocation, endLocation
     
@@ -163,7 +163,7 @@ Sub HighlightCardOpenAI()
     
     locStart = paragraph.range.start
     
-    Do While paragraph.OutlineLevel <> 1 And paragraph.OutlineLevel <> 2 And paragraph.OutlineLevel <> 3 And paragraph.OutlineLevel <> 4
+    Do While paragraph.outlineLevel <> 1 And paragraph.outlineLevel <> 2 And paragraph.outlineLevel <> 3 And paragraph.outlineLevel <> 4
         BodyText = BodyText & paragraph.range.Text
         paragraphs = paragraphs & "," & CStr(paragraph.range.End)
         Set paragraph = paragraph.Next(1)
@@ -218,7 +218,7 @@ Sub HighlightCardOpenAI()
     End If
     
     Result = AppleScriptTask("openaipythoninterface.scpt", "openaihandler", TagText & "$$$" & BodyText & "$$$highlight$$$" & UnderlineText & "$$$" & paragraphs)
-    
+    MsgBox Result
     Result = Replace(Result, "[", "")
     Result = Replace(Result, "]", "")
     resultArr = Split(Result, "), ")
@@ -235,9 +235,9 @@ Private Function UnderlineTextAsRanges(DataArr As Variant, style As String, locS
     
     Dim styleStr As String
     styleStr = style
-    If styleStr = "Highlight" Then
-        styleStr = "Underline"
-    End If
+    ' If styleStr = "Highlight" Then
+        ' styleStr = "Underline"
+    ' End If
     
     Dim phrase As Variant
     Dim start As Long
@@ -246,7 +246,6 @@ Private Function UnderlineTextAsRanges(DataArr As Variant, style As String, locS
     For Each phrase In DataArr
         phrase = Replace(phrase, "(", "")
         phrase = Replace(phrase, ")", "")
-        
         phraseSplit = Split(phrase, ", ")
         
         start = CLng(phraseSplit(0))
@@ -260,11 +259,11 @@ Private Function UnderlineTextAsRanges(DataArr As Variant, style As String, locS
 
         ' Apply the underline style to the range
         If styleStr = "Underline" Then
-            rngPhrase.Font.Underline = wdUnderlineSingle
+            rngPhrase.style = styleStr
         End If
         
         If styleStr = "Emphasis" Then
-            rngPhrase.Font.Bold = True
+            rngPhrase.style = styleStr
         End If
         
         If style = "Highlight" Then
@@ -273,3 +272,4 @@ Private Function UnderlineTextAsRanges(DataArr As Variant, style As String, locS
         End If
     Next phrase
 End Function
+
