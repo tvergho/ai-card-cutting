@@ -31,7 +31,7 @@ Sub UnderlineCardOpenAI()
     
     locEnd = paragraph.Previous(1).range.End
 
-    If Len(TagText) > 200 Then
+    If Len(TagText) > 300 Then
         Application.ScreenUpdating = True
         MsgBox "Invalid card"
         Exit Sub
@@ -41,7 +41,7 @@ Sub UnderlineCardOpenAI()
     
     Result = Replace(Result, "[", "")
     Result = Replace(Result, "]", "")
-    MsgBox Result
+    ' MsgBox Result
     resultArr = Split(Result, "), ")
     UnderlineTextAsRanges resultArr, "Underline", locStart, locEnd
     
@@ -81,7 +81,7 @@ Sub EmphasizeCardOpenAI()
     
     locEnd = paragraph.Previous(1).range.End
 
-    If Len(TagText) > 200 Then
+    If Len(TagText) > 300 Then
         Application.ScreenUpdating = True
         MsgBox "Invalid card"
         Exit Sub
@@ -108,7 +108,7 @@ Sub EmphasizeCardOpenAI()
     found = range.Find.Execute
 
     ' Loop through the found underlined phrases
-    While found
+    Do While found
         If Len(UnderlineText) > 0 Then
             UnderlineText = UnderlineText & ", "
         End If
@@ -118,8 +118,12 @@ Sub EmphasizeCardOpenAI()
         ' Set the new search range and execute the search again
         range.start = range.End
         range.End = locEnd
+        
+        If range.start >= range.End Then
+            Exit Do
+        End If
         found = range.Find.Execute
-    Wend
+    Loop
 
     If Len(UnderlineText) < 10 Then
         Application.ScreenUpdating = True
@@ -131,7 +135,7 @@ Sub EmphasizeCardOpenAI()
     
     Result = Replace(Result, "[", "")
     Result = Replace(Result, "]", "")
-    MsgBox Result
+    ' MsgBox Result
     resultArr = Split(Result, "), ")
     UnderlineTextAsRanges resultArr, "Emphasis", startLocation, endLocation
     
@@ -171,7 +175,7 @@ Sub HighlightCardOpenAI()
     
     locEnd = paragraph.Previous(1).range.End
 
-    If Len(TagText) > 200 Then
+    If Len(TagText) > 300 Then
         Application.ScreenUpdating = True
         MsgBox "Invalid card"
         Exit Sub
@@ -198,7 +202,7 @@ Sub HighlightCardOpenAI()
     found = range.Find.Execute
 
     ' Loop through the found underlined phrases
-    While found
+    Do While found
         If Len(UnderlineText) > 0 Then
             UnderlineText = UnderlineText & ", "
         End If
@@ -208,8 +212,12 @@ Sub HighlightCardOpenAI()
         ' Set the new search range and execute the search again
         range.start = range.End
         range.End = locEnd
+        
+        If range.start >= range.End Then
+            Exit Do
+        End If
         found = range.Find.Execute
-    Wend
+    Loop
 
     If Len(UnderlineText) < 10 Then
         Application.ScreenUpdating = True
@@ -218,7 +226,7 @@ Sub HighlightCardOpenAI()
     End If
     
     Result = AppleScriptTask("openaipythoninterface.scpt", "openaihandler", TagText & "$$$" & BodyText & "$$$highlight$$$" & UnderlineText & "$$$" & paragraphs)
-    MsgBox Result
+    ' MsgBox Result
     Result = Replace(Result, "[", "")
     Result = Replace(Result, "]", "")
     resultArr = Split(Result, "), ")
@@ -272,4 +280,3 @@ Private Function UnderlineTextAsRanges(DataArr As Variant, style As String, locS
         End If
     Next phrase
 End Function
-

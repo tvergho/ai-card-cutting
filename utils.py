@@ -106,6 +106,8 @@ async def get_completion(prompt, model, debug=False):
 
     output = fix_truncated_json(output.strip())
     output = fix_escaped_unicode(output)
+    # output = output.replace("“", "\"")
+    # output = output.replace("”", "\"")
     output_arr = yaml.safe_load(output)
     return output_arr
   except Exception as e:

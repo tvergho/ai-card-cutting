@@ -56,7 +56,7 @@ def highlight_substrings(text, substrings, debug=False, paragraphs=[]):
         # Try again if substring >= 3 words with the whole text
         if match == -1 and len(substring.split(" ")) >= 3:
           match = find_substring_index_difflib(text, substring)
-          start_location = match + match_len
+          start_location = match + len(substring)
 
         elif match != -1:
             match_len = len(substring) if not exact_match else len(substring) + 1

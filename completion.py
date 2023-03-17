@@ -69,6 +69,6 @@ async def main():
 if __name__ == '__main__':
   # log arguments string to file for debugging
   with open('/Users/tylervergho/test/completion.log', 'w') as f:
-    f.write(sys.argv[0] + " " + sys.argv[1] + " " + sys.argv[2] + " " + sys.argv[3] + " " + sys.argv[4])
+    f.write(sys.argv[0] + " " + sys.argv[1] + " " + sys.argv[2] + " " + sys.argv[3] + " " + sys.argv[4] + " " + sys.argv[5])
 
   asyncio.run(main())
