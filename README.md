@@ -7,11 +7,11 @@ You may get better results with more data, or training a higher-quality model (w
 ### Setup
 1. Install [Python](https://www.python.org/downloads/macos/) for Mac. Would recommend version 3.10 or lower.
 2. Install [conda](https://docs.anaconda.com/anaconda/install/mac-os/).
-3. Install dependencies (from the *base* conda environment):
+3. Clone this git repository. You need to keep this on a consistent location on your computer for inference to continue to work.
+4. Install dependencies (from the *base* conda environment):
 ```
 pip install -r requirements.txt
 ```
-4. Clone this git repository. You need to keep this on a consistent location on your computer for inference to continue to work.
 
 ### Process Your Data
 1. First, generate the training data from a collection of cards. This was tested on roughly 500 samples of consistent formatting and style. 200-1000 should be used for optimal results (more is better). Put your cards in documents in the `data` folder.
