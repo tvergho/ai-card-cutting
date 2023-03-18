@@ -1,0 +1,10 @@
+openai
+asyncio
+python-dotenv
+python-docx
+pyyaml
+tiktoken
+termcolor
+jsonlines
+python-dateutil
+datasets

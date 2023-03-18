@@ -19,11 +19,11 @@ async def main():
 
   parser = argparse.ArgumentParser()
   parser.add_argument("step", type=str, help="phase to run in (test, file, tune, list, cost)")
-  parser.add_argument("--model", type=str, help="model to use (underline, highlight, emphasis, or custom)", default="underline")
+  parser.add_argument("-m", "--model", type=str, help="model to use (underline, highlight, emphasis, or custom)", default="underline")
   parser.add_argument("--debug", action="store_false", help="hide debug info")
   parser.add_argument("-f", "--file", type=str, help="path to file to upload or file ID to use for fine tuning")
   parser.add_argument("-l", "--list", type=str, help="in list mode, what to list (files, finetunes)")
-  parser.add_argument("-oai", "--open_ai_model", type=str, help="OpenAI model to use for fine tuning (default: curie)", default="curie")
+  parser.add_argument("-oai", "--open_ai_model", type=str, help="OpenAI model to use for fine tuning (default: babbage)", default="babbage")
   parser.add_argument("--finetune_id", type=str, default=None)
 
   args = parser.parse_args()
@@ -83,5 +83,5 @@ async def main():
 
 
 if __name__=="__main__":
-  loop = asyncio.get_event_loop()
+  loop = asyncio.new_event_loop()
   loop.run_until_complete(main())

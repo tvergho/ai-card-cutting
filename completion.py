@@ -32,7 +32,8 @@ async def main():
   paragraphs = [int(p) for p in paragraphs]
   paragraphs = [p for p in paragraphs if p != 0]
 
-  with open('/Users/tylervergho/test/bodyText.log', 'w') as f:
+  os.makedirs("/tmp/cards", exist_ok=True)
+  with open('/tmp/cards/bodyText.log', 'w') as f:
     f.write(bodyText)
 
   model = model_name_to_id[args.modelName]
@@ -61,14 +62,14 @@ async def main():
 
   output_str, loc = output
 
-  with open('/Users/tylervergho/test/completion2.log', 'w') as f:
+  with open('/tmp/cards/completion2.log', 'w') as f:
     f.write(str(output_str))
     
   print(loc)
 
 if __name__ == '__main__':
   # log arguments string to file for debugging
-  with open('/Users/tylervergho/test/completion.log', 'w') as f:
+  with open('/tmp/cards/completion.log', 'w') as f:
     f.write(sys.argv[0] + " " + sys.argv[1] + " " + sys.argv[2] + " " + sys.argv[3] + " " + sys.argv[4] + " " + sys.argv[5])
 
   asyncio.run(main())

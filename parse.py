@@ -188,12 +188,16 @@ if __name__ == "__main__":
       print("Writing to " + output_file)
 
       if args.input_field == "text":
-        writer.write_all([{
-          "prompt": format_prompt_for_openai_completion(card["tag"], card["text"]),
-          "completion": " " + json.dumps(card[args.field]) + " END"
-        } for card in json_dict])
+        for card in json_dict:
+          prompts = format_prompt_for_openai_completion(card["tag"], card["text"])
+          writer.write_all([{
+            "prompt": prompt,
+            "completion": " " + json.dumps(card[args.field]) + " END"
+          } for prompt in prompts])
       else:
-        writer.write_all([{
-          "prompt": format_prompt_for_openai_completion(card["tag"], json.dumps(card[args.input_field])),
-          "completion": " " + json.dumps(card[args.field]) + " END"
-        } for card in json_dict])
+        for card in json_dict:
+          prompts = format_prompt_for_openai_completion(card["tag"], json.dumps(card[args.input_field]))
+          writer.write_all([{
+            "prompt": prompt,
+            "completion": " " + json.dumps(card[args.field]) + " END"
+          } for prompt in prompts])
