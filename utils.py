@@ -1,4 +1,4 @@
-import openai
+import openai_async
 import tiktoken
 import json
 from datetime import datetime
@@ -7,8 +7,12 @@ from utils_highlight import highlight_substrings
 from constants import MAX_PROMPT_LENGTH
 import re
 import yaml
+from dotenv import load_dotenv
+import os
 
 encoding = tiktoken.encoding_for_model("text-babbage-001")
+load_dotenv()
+openai_api_key = os.getenv("OPENAI_API_KEY")
 
 def num_tokens_from_string(string):
     """Returns the number of tokens in a text string."""
@@ -91,15 +95,28 @@ async def get_completion(prompt, model, debug=False):
     if debug:
       print("Max tokens: " + str(2048-num_tokens_in_prompt))
 
-    response = openai.Completion.create(
-      model=model,
-      prompt=prompt,
-      max_tokens=2048-num_tokens_in_prompt-10,
-      temperature=0,
-      stop=["\n", "END"]
+    # response = openai.Completion.create(
+    #   model=model,
+    #   prompt=prompt,
+    #   max_tokens=2048-num_tokens_in_prompt-10,
+    #   temperature=0,
+    #   stop=["\n", "END"]
+    # )
+
+    response = await openai_async.complete(
+      openai_api_key,
+      timeout=10,
+      payload={
+        "model": model,
+        "prompt": prompt,
+        "max_tokens": 2048-num_tokens_in_prompt-10,
+        "temperature": 0,
+        "stop": ["\n", "END"]
+      }
     )
-    choices = response.choices
-    output = choices[0].text.strip()
+
+    choices = response.json()['choices']
+    output = choices[0]['text'].strip()
 
     if debug:
       print(output)

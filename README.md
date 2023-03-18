@@ -1,16 +1,16 @@
 # Cut Cards with AI
 
-This is in beta. It will work for fine about 60 percent of cards, overhighlight about 20 percent, underhighlight/highlight randomly about 15 percent, and freeze/crash Word on the rest. It works better on highlighting manually pre-underlined cards. It also tends to freeze or take a long time on long cards.
+This is in beta. It will work for fine about 60 percent of cards, overhighlight about 20 percent, underhighlight/highlight randomly about 15 percent, and freeze/crash Word on the rest. It works better on highlighting manually pre-underlined, shorter cards. It also tends to freeze or take a long time on very long cards.
 
 You may get better results with more data, or training a higher-quality model (which costs more).
 ## How to Use
 ### Setup
 1. Install [Python](https://www.python.org/downloads/macos/) for Mac. Would recommend version 3.10 or lower.
-2. Install dependencies:
+2. Install [conda](https://docs.anaconda.com/anaconda/install/mac-os/).
+3. Install dependencies (from the *base* conda environment):
 ```
 pip install -r requirements.txt
 ```
-3. Install [conda](https://docs.anaconda.com/anaconda/install/mac-os/).
 4. Clone this git repository. You need to keep this on a consistent location on your computer for inference to continue to work.
 
 ### Process Your Data
@@ -29,7 +29,7 @@ openai tools fine_tunes.prepare_data -f emphasis.jsonl
 openai tools fine_tunes.prepare_data -f highlights.jsonl
 openai tools fine_tunes.prepare_data -f underlines.jsonl
 ```
-Use these newly prepared files for the fine-tuning stage.
+Open them and make sure everything looks reasonable. Use these newly prepared files for the fine-tuning stage.
 
 ### Fine-tune the Models
 1. Put your [OpenAI API key](https://help.openai.com/en/articles/4936850-where-do-i-find-my-secret-api-key) into a file called `.env` in the root directory. It should look like this:
@@ -57,7 +57,7 @@ python finetune.py cost -f emphasis.jsonl
 1. Move (or copy) the `openaipythoninterface.scpt` file to `~/Library/Application Scripts/com.microsoft.Word/`. 
 2. Open in Script Editor. Replace the path on line 16 with the path to `completion.py` in this directory.
 3. Install the macros in `macros.bas` to your desired location in Word. This can either be in the Verbatim template, your normal template, or individual documents for testing.
-  - You can also associate keyboard shortcuts with each macro for easy use.
+  - You can also associate keyboard shortcuts with each macro for ease of use.
 4. To run a macro, put your cursor in the *tag* of a card and run the macro. A few notes:
   - It may be relatively slow on long cards, particularly for underlining. You will not be able to use Word while the macro is running.
   - The formatting macros do better on consistently formatted and cleanly cited cards. In particular, it does not do well with two-line cites or paragraphs of text between the tag and cite.
@@ -74,3 +74,4 @@ python finetune.py test -m underline
 - [ ] Fix highlight bug where un-underlined text found earlier is highlighted
 - [x] Deprecate substring_locations
 - [x] Remove path specific log files
+- [ ] Weird Unicode encoding bug messes up parsing sometimes

@@ -9,3 +9,4 @@ jsonlines
 python-dateutil
 datasets
 pathlib
+openai_async
