@@ -63,6 +63,7 @@ python finetune.py cost -f emphasis.jsonl
   - The formatting macros do better on consistently formatted and cleanly cited cards. In particular, it does not do well with two-line cites or paragraphs of text between the tag and cite.
   - Though the emphasis/highlighting algorithms do their best to highlight only previously underlined words, at times earlier matches may be highlighted. This is particularly evident with acronyms (e.g. "ai" in "artificial intelligence" will often highlight the first "i" in the word "artificial", not the first letter of "intelligence").
   - Save frequently – random crashes are possible.
+  - This will not work on the very last card in a document.
 
 You can also test the models from the command line.
 ```

@@ -60,7 +60,7 @@ def highlight_substrings(text, substrings, debug=False, paragraphs=[]):
           match = find_substring_index_difflib(text, substring)
           start_location = match + len(substring)
 
-        elif match != -1:
+        if match != -1:
             match_len = len(substring) if not exact_match else len(substring) + 1
             inserted_tags.append((match, "<h>"))
             inserted_tags.append((match + match_len, "</h>"))
