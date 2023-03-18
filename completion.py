@@ -8,9 +8,12 @@ from utils import get_completions_from_input, fix_escaped_unicode
 from constants import model_name_to_id
 import os
 import re
+from pathlib import Path
 
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
+
+logdir = str(Path(__file__).resolve().parent) + "/logs"
 
 async def main():
   parser = argparse.ArgumentParser()
@@ -32,8 +35,7 @@ async def main():
   paragraphs = [int(p) for p in paragraphs]
   paragraphs = [p for p in paragraphs if p != 0]
 
-  os.makedirs("/tmp/cards", exist_ok=True)
-  with open('/tmp/cards/bodyText.log', 'w') as f:
+  with open(logdir + '/bodyText.log', 'w+') as f:
     f.write(bodyText)
 
   model = model_name_to_id[args.modelName]
@@ -62,14 +64,16 @@ async def main():
 
   output_str, loc = output
 
-  with open('/tmp/cards/completion2.log', 'w') as f:
+  with open(logdir + '/completion2.log', 'w+') as f:
     f.write(str(output_str))
     
   print(loc)
 
 if __name__ == '__main__':
+  os.makedirs(logdir, exist_ok=True)
+
   # log arguments string to file for debugging
-  with open('/tmp/cards/completion.log', 'w') as f:
+  with open(logdir + '/completion.log', 'w+') as f:
     f.write(sys.argv[0] + " " + sys.argv[1] + " " + sys.argv[2] + " " + sys.argv[3] + " " + sys.argv[4] + " " + sys.argv[5])
 
   asyncio.run(main())

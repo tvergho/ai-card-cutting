@@ -5,3 +5,4 @@ __pycache__/
 *.jsonl
 *.docx
 *.docm
+logs/*
