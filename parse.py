@@ -32,7 +32,6 @@ def parse_cards(filename):
   cards = []
   current_card = []
   print("Parsing " + filename)
-  
   for paragraph in document.paragraphs:
     if paragraph.style.name == TAG_NAME:
       try:
@@ -201,3 +200,11 @@ if __name__ == "__main__":
             "prompt": prompt,
             "completion": " " + json.dumps(card[args.field]) + " END"
           } for prompt in prompts])
+
+    # with jsonlines.open("emphasis.jsonl", mode="w") as writer:
+    #   for card in json_dict:
+    #     prompts = format_prompt_for_openai_completion(card["tag"], json.dumps(card[args.input_field]))
+    #     writer.write_all([{
+    #       "prompt": prompt,
+    #       "completion": " " + json.dumps(card["emphasis"]) + " END"
+    #     } for prompt in prompts])

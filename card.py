@@ -42,7 +42,6 @@ class Card():
     self.highlight_labels = []
     self.underline_labels = []
     self.emphasis_labels = []
-
     self.parse_paragraphs()
 
     self.additional_info = additional_info
@@ -69,7 +68,6 @@ class Card():
       p = self.paragraphs[i]
       runs = p.runs
       j = 0
-
       for r in runs:
         run_text = r.text.strip()
         run_index = p.text.find(run_text, j)

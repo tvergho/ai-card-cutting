@@ -9,6 +9,7 @@ import re
 import yaml
 from dotenv import load_dotenv
 import os
+import openai
 
 encoding = tiktoken.encoding_for_model("text-babbage-001")
 load_dotenv()

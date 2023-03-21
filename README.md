@@ -39,7 +39,7 @@ OPENAI_API_KEY=sk-your-key-here
 2. Upload each of your files to OpenAI, and start training (repeat for each model):
 ```
 python finetune.py file -f emphasis.jsonl
-python finetune.py tune -f YOUR_FILE_ID
+python finetune.py tune -f YOUR_FILE_ID -m emphasis/highlight/underline
 ```
 3. You can monitor the progress of your fine-tuning or retrieve file IDs using the `list` command:
 ```
@@ -73,6 +73,8 @@ python finetune.py test -m underline
 ## To Do
 - [x] Write installation instructions and requirements.txt
 - [ ] Fix highlight bug where un-underlined text found earlier is highlighted
+  - Make it so you can only highlight the first letter individually.
 - [x] Deprecate substring_locations
 - [x] Remove path specific log files
 - [ ] Weird Unicode encoding bug messes up parsing sometimes
+- [ ] Generate highlight/underline/emphasis with one script
