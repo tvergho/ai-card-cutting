@@ -37,7 +37,7 @@ def format_prompt_for_openai_completion(tag, bodyText, underlines=None):
       chunk += word + " "
       chunk_len += tokens
     bodyTextChunks.append(chunk)
-    return [f"Tag: {tag}\n\nInput: {text}\n\n###\n\nHighlighted Text:" for text in bodyTextChunks]
+    return [f"Tag: {tag}\n\nInput: {text}\n\n###\n\nHighlighted Text:" for text in bodyTextChunks], bodyTextChunks
   else:
     try:
       underlines_arr = json.loads(underlines.strip())
@@ -53,7 +53,7 @@ def format_prompt_for_openai_completion(tag, bodyText, underlines=None):
         chunk.append(underline)
         chunk_len += tokens + 5
       bodyTextChunks.append(chunk)
-      return [f"Tag: {tag}\n\nInput: {json.dumps(chunk)}\n\n###\n\nHighlighted Text:" for chunk in bodyTextChunks]
+      return [f"Tag: {tag}\n\nInput: {json.dumps(chunk)}\n\n###\n\nHighlighted Text:" for chunk in bodyTextChunks], bodyTextChunks
     except Exception as e:
       print(e)
       return None
@@ -135,9 +135,10 @@ async def get_completion(prompt, model, debug=False):
 
 async def get_completions_from_input(tag, bodyText, model, underlines=None, debug=False, paragraphs=[]):
   if underlines is not None:
-    prompts = format_prompt_for_openai_completion(tag, bodyText, underlines)
+    prompts, _ = format_prompt_for_openai_completion(tag, bodyText, underlines)
+    chunks = None
   else:
-    prompts = format_prompt_for_openai_completion(tag, bodyText, None)
+    prompts, chunks = format_prompt_for_openai_completion(tag, bodyText, None)
 
   if prompts is None:
     print("Invalid input")
@@ -148,13 +149,21 @@ async def get_completions_from_input(tag, bodyText, model, underlines=None, debu
     print("Invalid output")
     return None
 
-  # Flatten array
-  parsed_results = [item.strip() for sublist in results for item in sublist]    
+  # Strip each item in the array
+  parsed_results = [[s.strip().replace("\n", "") for s in sublist] for sublist in results]  
 
-  # Remove newline characters
-  parsed_results = [item.replace("\n", "") for item in parsed_results]
-
-  output_str, loc = highlight_substrings(bodyText, parsed_results, debug=debug, paragraphs=paragraphs)
+  output_str = ""
+  loc = []
+  
+  if chunks:
+    for i, result in enumerate(parsed_results):
+      os, l = highlight_substrings(chunks[i], result, debug=debug, paragraphs=paragraphs)
+      output_str += os
+      loc.extend(l)
+  else:
+    # Flatten results 
+    parsed_results = [item for sublist in parsed_results for item in sublist]
+    output_str, loc = highlight_substrings(bodyText, parsed_results, debug=debug, paragraphs=paragraphs)
   return output_str, loc
 
 

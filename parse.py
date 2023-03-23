@@ -188,14 +188,14 @@ if __name__ == "__main__":
 
       if args.input_field == "text":
         for card in json_dict:
-          prompts = format_prompt_for_openai_completion(card["tag"], card["text"])
+          prompts, _ = format_prompt_for_openai_completion(card["tag"], card["text"])
           writer.write_all([{
             "prompt": prompt,
             "completion": " " + json.dumps(card[args.field]) + " END"
           } for prompt in prompts])
       else:
         for card in json_dict:
-          prompts = format_prompt_for_openai_completion(card["tag"], json.dumps(card[args.input_field]))
+          prompts, _ = format_prompt_for_openai_completion(card["tag"], json.dumps(card[args.input_field]))
           writer.write_all([{
             "prompt": prompt,
             "completion": " " + json.dumps(card[args.field]) + " END"
