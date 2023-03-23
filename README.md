@@ -15,8 +15,8 @@ pip install -r requirements.txt
 
 ### Process Your Data
 1. First, generate the training data from a collection of cards. This was tested on roughly 500 samples of consistent formatting and style. 200-1000 should be used for optimal results (more is better). Put your cards in documents in the `data` folder.
-  - Optionally use the pre-generated .jsonl files in the `data` folder, in which case you can skip directly to the fine-tuning stage.
-  - The model will automatically split up long cards for you (just as it does during inference).
+    - Optionally use the pre-generated .jsonl files in the `data` folder, in which case you can skip directly to the fine-tuning stage.
+    - The model will automatically split up long cards for you (just as it does during inference).
 2. Run the following command to generate data files for each model:
 ```
 python parse.py data -o underlines.jsonl --field underlines
@@ -57,13 +57,13 @@ python finetune.py cost -f emphasis.jsonl
 1. Move (or copy) the `openaipythoninterface.scpt` file to `~/Library/Application Scripts/com.microsoft.Word/`. 
 2. Open in Script Editor. Replace the path on line 16 with the path to `completion.py` in this directory.
 3. Install the macros in `macros.bas` to your desired location in Word. This can either be in the Verbatim template, your normal template, or individual documents for testing.
-  - You can also associate keyboard shortcuts with each macro for ease of use.
+    - You can also associate keyboard shortcuts with each macro for ease of use.
 4. To run a macro, put your cursor in the *tag* of a card and run the macro. A few notes:
-  - It may be relatively slow on long cards, particularly for underlining. You will not be able to use Word while the macro is running.
-  - The formatting macros do better on consistently formatted and cleanly cited cards. In particular, it does not do well with two-line cites or paragraphs of text between the tag and cite.
-  - Though the emphasis/highlighting algorithms do their best to highlight only previously underlined words, at times earlier matches may be highlighted. This is particularly evident with acronyms (e.g. "ai" in "artificial intelligence" will often highlight the first "i" in the word "artificial", not the first letter of "intelligence").
-  - Save frequently – random crashes are possible.
-  - This will not work on the very last card in a document.
+    - It may be relatively slow on long cards, particularly for underlining. You will not be able to use Word while the macro is running.
+    - The formatting macros do better on consistently formatted and cleanly cited cards. In particular, it does not do well with two-line cites or paragraphs of text between the tag and cite.
+    - Though the emphasis/highlighting algorithms do their best to highlight only previously underlined words, at times earlier matches may be highlighted. This is particularly evident with acronyms (e.g. "ai" in "artificial intelligence" will often highlight the first "i" in the word "artificial", not the first letter of "intelligence").
+    - Save frequently – random crashes are possible.
+    - This will not work on the very last card in a document.
 
 You can also test the models from the command line.
 ```
